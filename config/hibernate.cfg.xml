@@ -1,0 +1,32 @@
+<!DOCTYPE hibernate-configuration PUBLIC
+        "-//Hibernate/Hibernate Configuration DTD 3.0//EN"
+        "http://www.hibernate.org/dtd/hibernate-configuration-3.0.dtd">
+<hibernate-configuration>
+    <session-factory>
+        <!-- JDBC Database connection settings -->
+        <property name="connection.driver_class">com.mysql.cj.jdbc.Driver</property>
+        <property name="connection.url">jdbc:mysql://localhost:3306/ilearning</property>
+        <property name="connection.username">ilearning</property>
+        <property name="connection.password">iLearning2020</property>
+        <!-- JDBC connection pool settings -->
+        <property name="connection.pool_size">10</property>
+        <property name="dialect">org.hibernate.dialect.MySQL5Dialect</property>
+        <property name="show_sql">true</property>
+        <property name="current_session_context_class">thread</property>
+        <property name="hibernate.dbcp.initializeSize">10</property>
+        <property name="hibernate.dbcp.maxTotal">20</property>
+        <property name="hibernate.dbcp.maxIdle">10</property>
+        <property name="hibernate.dbcp.minIdle">5</property>
+        <property name="hibernate.dbcp.maxWaitMillis">-1</property>
+        <property name="hibernate.hikari.connectionTimeout">2000</property>
+        <property name="hibernate.hikari.minimumIdle">10</property>
+        <property name="hibernate.hikari.maximumPoolSize">20</property>
+        <property name="hibernate.hikari.idleTimeout">300000</property>
+        <mapping class="com.icod.ilearning.data.model.UserModel"></mapping>
+        <mapping class="com.icod.ilearning.data.model.CourseModel"></mapping>
+        <mapping class="com.icod.ilearning.data.model.RoleModel"></mapping>
+        <mapping class="com.icod.ilearning.data.model.PermissionModel"></mapping>
+        <mapping class="com.icod.ilearning.data.model.TeacherModel"></mapping>
+        <mapping class="com.icod.ilearning.data.model.RefreshTokenModel"></mapping>
+    </session-factory>
+</hibernate-configuration>
