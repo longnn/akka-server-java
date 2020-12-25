@@ -11,6 +11,8 @@ import com.icod.ilearning.data.model.RoleModel;
 import com.icod.ilearning.data.model.UserModel;
 import com.icod.ilearning.services.protocol.user.assignPermission.RequestAssignUserPermission;
 import com.icod.ilearning.services.protocol.user.assignRole.RequestAssignUserRole;
+import com.icod.ilearning.services.protocol.user.checkEmail.RequestCheckEmail;
+import com.icod.ilearning.services.protocol.user.checkEmail.ResponseCheckEmail;
 import com.icod.ilearning.services.protocol.user.create.RequestCreateUser;
 import com.icod.ilearning.services.protocol.user.create.ResponseCreateUser;
 import com.icod.ilearning.services.protocol.user.list.RequestGetUserList;
@@ -52,8 +54,29 @@ public class UserRoute extends AllDirectives {
                 )).orElse(
                     path(PathMatchers.longSegment().slash("assignPermission"), id -> post(() -> entity(Jackson.unmarshaller(RequestAssignUserPermission.class), request -> assignPermission(id, request)))
                 )).orElse(
-                    path("me",()-> getUserByToken())
+                    path("me",()-> getUserByToken()).orElse(
+                    path("find",() -> find())).orElse(
+                    path("checkEmail",() -> post(()-> entity(Jackson.unmarshaller(RequestCheckEmail.class), request-> checkEmail(request)))))
                 );
+    }
+
+    private Route checkEmail(RequestCheckEmail request){
+        UserDao userDao = new UserDao();
+        boolean isExisted = userDao.isEmailExists(request.getEmail());
+        ResponseCheckEmail response =  new ResponseCheckEmail();
+        response.setExisted(isExisted);
+        return complete(StatusCodes.OK,response,Jackson.marshaller());
+    }
+
+    private Route find(){
+        CompletableFuture<ResponseGetUserList> future = CompletableFuture.supplyAsync(() -> {
+            List<UserModel> users = userDao.getAll(null);
+            ResponseGetUserList response = new ResponseGetUserList();
+            response.setTotal(users.size());
+            response.setUsers(users);
+            return response;
+        });
+        return completeOKWithFuture(future, Jackson.marshaller());
     }
 
     private Route getUsers(RequestGetUserList request) {
@@ -62,7 +85,6 @@ public class UserRoute extends AllDirectives {
             ResponseGetUserList response = new ResponseGetUserList();
             response.setTotal(users.size());
             response.setUsers(users);
-            response.setPerPage(request.getLimit());
             return response;
         });
         return completeOKWithFuture(future, Jackson.marshaller());

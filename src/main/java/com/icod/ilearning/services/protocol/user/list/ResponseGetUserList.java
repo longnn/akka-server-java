@@ -10,8 +10,6 @@ import java.util.List;
 public class ResponseGetUserList {
     @JsonProperty("total")
     long total;
-    @JsonProperty("perPage")
-    long perPage;
-    @JsonProperty("users")
+    @JsonProperty("items")
     List<UserModel> users;
 }

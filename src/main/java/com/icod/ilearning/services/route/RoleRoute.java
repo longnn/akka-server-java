@@ -28,13 +28,15 @@ public class RoleRoute extends AllDirectives {
 
     public Route createRoute() {
         return pathEnd(() ->
-                get(() -> entity(Jackson.unmarshaller(RequestGetRoleList.class), request -> getRole(request))).orElse(
-                post(() -> entity(Jackson.unmarshaller(RequestCreateRole.class), request -> createRole(request))))
-        ).orElse(
+                    get(() -> entity(Jackson.unmarshaller(RequestGetRoleList.class), request -> getRole(request))).orElse(
+                    post(() -> entity(Jackson.unmarshaller(RequestCreateRole.class), request -> createRole(request))))
+                ).orElse(
                 path(PathMatchers.longSegment(), id ->
-                        get(() -> getRole(id)).orElse(
-                                put(() -> updateRole(id)).orElse(
-                                        delete(() -> deleteRole(id))))
+                    get(() -> getRole(id)).orElse(
+                    put(() -> updateRole(id)).orElse(
+                    delete(() -> deleteRole(id))))
+                ).orElse(
+                    path("find",() -> post(()-> getAllRole()))
                 ));
     }
 

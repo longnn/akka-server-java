@@ -5,13 +5,13 @@
     <session-factory>
         <!-- JDBC Database connection settings -->
         <property name="connection.driver_class">com.mysql.cj.jdbc.Driver</property>
-        <property name="connection.url">jdbc:mysql://localhost:3306/ilearning</property>
-        <property name="connection.username">ilearning</property>
-        <property name="connection.password">iLearning2020</property>
+        <property name="connection.url">jdbc:mysql://localhost:3306/services</property>
+        <property name="connection.username">longnn</property>
+        <property name="connection.password">Havs2020</property>
         <!-- JDBC connection pool settings -->
         <property name="connection.pool_size">10</property>
         <property name="dialect">org.hibernate.dialect.MySQL5Dialect</property>
-        <property name="show_sql">true</property>
+        <property name="show_sql">false</property>
         <property name="current_session_context_class">thread</property>
         <property name="hibernate.dbcp.initializeSize">10</property>
         <property name="hibernate.dbcp.maxTotal">20</property>

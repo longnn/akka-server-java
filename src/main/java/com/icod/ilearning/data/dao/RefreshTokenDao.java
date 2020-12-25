@@ -6,9 +6,9 @@ import com.icod.ilearning.util.HibernateUtil;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
 
+import javax.persistence.NoResultException;
+
 public class RefreshTokenDao {
-
-
 
     public RefreshTokenModel find(String refreshToken) {
         Session session = null;
@@ -33,7 +33,9 @@ public class RefreshTokenDao {
             query.setParameter("userId", userId);
             return query.getSingleResult();
         } catch (Exception e) {
-            e.printStackTrace();
+            if(e instanceof NoResultException == false) {
+                e.printStackTrace();
+            }
             return null;
         } finally {
             if (session != null) session.close();
