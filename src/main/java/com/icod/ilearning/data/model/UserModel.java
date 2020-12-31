@@ -48,7 +48,7 @@ public class UserModel {
     @Column(name = "status")
     int status;
 
-    @OneToOne(cascade = {CascadeType.ALL}, fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "role_id", referencedColumnName = "id")
     RoleModel role;
 

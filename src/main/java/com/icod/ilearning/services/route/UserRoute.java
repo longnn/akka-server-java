@@ -23,6 +23,7 @@ import com.icod.ilearning.util.ValidationUtil;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import io.jsonwebtoken.Claims;
+import org.apache.commons.lang3.math.NumberUtils;
 
 import java.util.Date;
 import java.util.List;
@@ -41,7 +42,7 @@ public class UserRoute extends AllDirectives {
     public Route createRoute() {
         return pathEnd(() ->
                 get(() -> entity(Jackson.unmarshaller(RequestGetUserList.class), request -> getUsers(request))).orElse(
-                    post(() -> entity(Jackson.unmarshaller(RequestCreateUser.class), request -> createUser(request))))
+                post(() -> entity(Jackson.unmarshaller(RequestCreateUser.class), request -> createUser(request))))
                 ).orElse(
                 path(PathMatchers.longSegment(), id ->
                     pathEnd(() ->
@@ -123,7 +124,7 @@ public class UserRoute extends AllDirectives {
     private Route createUser(RequestCreateUser request) {
         ResponseCreateUser response;
         // VALIDATE
-        if (ValidationUtil.isNullOrEmpty(request.getName())) {
+        if (ValidationUtil.isNullOrEmpty(request.getFullname())) {
             return reject(Rejections.malformedFormField("name","name required"));
         }
         if (!ValidationUtil.isValidEmail(request.getEmail())) {
@@ -135,16 +136,22 @@ public class UserRoute extends AllDirectives {
         if (!ValidationUtil.isValidPassword(request.getPassword())) {
             return reject(Rejections.malformedFormField("password","password required and must contain at lease 8 characters"));
         }
+        if (!ValidationUtil.isNumber(request.getRole())) {
+            return reject(Rejections.malformedFormField("role","role id must be a number"));
+        }
+        RoleDao roleDao = new RoleDao();
+        RoleModel role = roleDao.findById(NumberUtils.createLong(request.getRole()));
         UserModel user = new UserModel();
-        user.setName(request.getName());
+        user.setName(request.getFullname());
         user.setEmail(request.getEmail());
         user.setPassword(SecurityUtil.md5(request.getPassword()));
         user.setCreatedAt(new Date());
         user.setUpdatedAt(new Date());
-        user.setStatus(request.getStatus());
+        user.setRole(role);
+        user.setStatus(Integer.parseInt(request.getStatus()));
         Long id = userDao.insert(user);
         if (id == null) {
-            return complete(StatusCodes.INTERNAL_SERVER_ERROR, "fail to delete user");
+            return complete(StatusCodes.INTERNAL_SERVER_ERROR, "fail to create user");
         } else {
             return complete(StatusCodes.OK, "user create success");
         }

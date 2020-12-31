@@ -1,5 +1,7 @@
 package com.icod.ilearning.util;
 
+import org.apache.commons.lang3.math.NumberUtils;
+import org.apache.commons.validator.Validator;
 import org.apache.commons.validator.routines.EmailValidator;
 
 public class ValidationUtil {
@@ -20,5 +22,9 @@ public class ValidationUtil {
             return false;
         }
         return true;
+    }
+
+    public static boolean isNumber(String input){
+        return NumberUtils.isNumber(input);
     }
 }

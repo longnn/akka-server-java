@@ -5,6 +5,6 @@ import lombok.Data;
 
 @Data
 public class ResponseCheckEmail {
-    @JsonProperty("is_existed")
+    @JsonProperty("isExisted")
     boolean isExisted;
 }

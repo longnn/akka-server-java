@@ -5,12 +5,14 @@ import lombok.Data;
 
 @Data
 public class RequestCreateUser {
-    @JsonProperty("name")
-    String name;
+    @JsonProperty("fullname")
+    String fullname;
     @JsonProperty("email")
     String email;
     @JsonProperty("password")
     String password;
     @JsonProperty("status")
-    int status;
+    String status;
+    @JsonProperty("role")
+    String role;
 }
