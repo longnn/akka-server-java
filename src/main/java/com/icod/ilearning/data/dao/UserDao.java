@@ -6,6 +6,7 @@ import com.icod.ilearning.util.SecurityUtil;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
 
+import javax.persistence.NoResultException;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
@@ -30,7 +31,9 @@ public class UserDao extends CrudDao<UserModel>{
             if (name != null) criteria.where(builder.like(user.get("name"), "%" + name + "%"));
             result = session.createQuery(criteria).getResultList();
         } catch (Exception e) {
-            e.printStackTrace();
+            if(e instanceof NoResultException == false) {
+                e.printStackTrace();
+            }
         } finally {
             if (session != null) session.close();
         }
@@ -45,8 +48,12 @@ public class UserDao extends CrudDao<UserModel>{
             query.setParameter("email", email);
             query.setParameter("password", SecurityUtil.md5(password));
             return query.getSingleResult();
+        } catch (NoResultException nre) {
+            return null;
         } catch (Exception e) {
-            e.printStackTrace();
+            if(e instanceof NoResultException == false) {
+                e.printStackTrace();
+            }
             return null;
         } finally {
             if (session != null) session.close();
