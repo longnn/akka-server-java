@@ -13,9 +13,12 @@ import com.icod.ilearning.services.protocol.role.list.RequestGetRoleList;
 import com.icod.ilearning.services.protocol.role.list.ResponseGetRoleList;
 import com.icod.ilearning.services.protocol.role.update.RequestUpdateRole;
 import com.icod.ilearning.util.ValidationUtil;
+import org.apache.commons.lang3.math.NumberUtils;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 public class RoleRoute extends AllDirectives {
@@ -28,34 +31,34 @@ public class RoleRoute extends AllDirectives {
 
     public Route createRoute() {
         return pathEnd(() ->
-                get(() -> entity(Jackson.unmarshaller(RequestGetRoleList.class), request -> getRole(request))).orElse(
+                get(() -> parameterMap(paramMap -> getRole(paramMap))).orElse(
                 post(() -> entity(Jackson.unmarshaller(RequestCreateRole.class), request -> createRole(request))))
-        ).orElse(
+            ).orElse(
                 path(PathMatchers.longSegment(), id ->
-                        get(() -> getRole(id)).orElse(
-                                put(() -> updateRole(id)).orElse(
-                                        delete(() -> deleteRole(id))))
-                ));
+                    get(() -> getRole(id)).orElse(
+                    put(() -> updateRole(id))).orElse(
+                    delete(() -> deleteRole(id)))
+                ).orElse(
+                        path("find",()-> getRole(new HashMap<>()))
+                )
+            );
     }
 
-    private Route getAllRole() {
+    private Route getRole(Map<String, String> request) {
         CompletableFuture<ResponseGetRoleList> future = CompletableFuture.supplyAsync(() -> {
-            List<RoleModel> roles = roleDao.getAll(null,null,null);
+            Integer limit = null;
+            Integer offset = null;
+            String name = null;
+            if (request.containsKey("name")) name = request.get("name");
+            if (request.containsKey("limit") && NumberUtils.isParsable(request.get("limit"))) {
+                limit = Integer.parseInt(request.get("limit"));
+            }
+            if (request.containsKey("offset") && NumberUtils.isParsable(request.get("offset"))) {
+                offset = Integer.parseInt(request.get("offset"));
+            }
+            List<RoleModel> roles = roleDao.getAll(name, limit, offset);
             ResponseGetRoleList response = new ResponseGetRoleList();
             response.setTotal(roles.size());
-            response.setPerPage(roles.size());
-            response.setRoles(roles);
-            return response;
-        });
-        return completeOKWithFuture(future, Jackson.marshaller());
-    }
-
-    private Route getRole(RequestGetRoleList request) {
-        CompletableFuture<ResponseGetRoleList> future = CompletableFuture.supplyAsync(() -> {
-            List<RoleModel> roles = roleDao.getAll(request.getName(), request.getLimit(), request.getOffset());
-            ResponseGetRoleList response = new ResponseGetRoleList();
-            response.setTotal(roles.size());
-            response.setPerPage(request.getLimit() != null ? request.getLimit() : roles.size());
             response.setRoles(roles);
             return response;
         });
@@ -72,7 +75,7 @@ public class RoleRoute extends AllDirectives {
 
     private Route createRole(RequestCreateRole request) {
         if (ValidationUtil.isNullOrEmpty(request.getName())) {
-            return reject(Rejections.malformedFormField("title","title required"));
+            return reject(Rejections.malformedFormField("title", "title required"));
         }
         RoleModel role = new RoleModel();
         role.setName(request.getName());

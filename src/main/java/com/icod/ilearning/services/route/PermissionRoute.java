@@ -8,14 +8,19 @@ import akka.http.javadsl.server.Rejections;
 import akka.http.javadsl.server.Route;
 import com.icod.ilearning.data.dao.PermissionDao;
 import com.icod.ilearning.data.model.PermissionModel;
+import com.icod.ilearning.data.model.RoleModel;
+import com.icod.ilearning.services.protocol.course.list.ResponseGetCourseList;
 import com.icod.ilearning.services.protocol.permission.create.RequestCreatePermission;
 import com.icod.ilearning.services.protocol.permission.list.RequestGetPermissionList;
 import com.icod.ilearning.services.protocol.permission.list.ResponseGetPermissionList;
 import com.icod.ilearning.services.protocol.permission.update.RequestUpdatePermission;
+import com.icod.ilearning.services.protocol.role.list.ResponseGetRoleList;
 import com.icod.ilearning.util.ValidationUtil;
+import org.apache.commons.lang3.math.NumberUtils;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 public class PermissionRoute extends AllDirectives {
@@ -27,8 +32,8 @@ public class PermissionRoute extends AllDirectives {
 
     public Route createRoute() {
         return  pathEnd(() ->
-                get(()-> entity(Jackson.unmarshaller(RequestGetPermissionList.class), request-> getPermission(request))).orElse(
-                        post(()-> entity(Jackson.unmarshaller(RequestCreatePermission.class), request-> createPermission(request))))
+                get(() -> parameterMap(paramMap -> getPermission(paramMap))).orElse(
+                post(()-> entity(Jackson.unmarshaller(RequestCreatePermission.class), request-> createPermission(request))))
         ).orElse(
                 path(PathMatchers.longSegment(), id->
                         get(()-> getPermission(id)).orElse(
@@ -37,13 +42,22 @@ public class PermissionRoute extends AllDirectives {
                 ));
     }
 
-    private Route getPermission(RequestGetPermissionList request){
+    private Route getPermission(Map<String,String> request){
         CompletableFuture<ResponseGetPermissionList> future = CompletableFuture.supplyAsync(() -> {
-            List<PermissionModel> permissions = permissionDao.getAll(request.getName(),request.getLimit(),request.getOffset());
+            Integer limit = null;
+            Integer offset = null;
+            String name = null;
+            if (request.containsKey("name")) name = request.get("name");
+            if (request.containsKey("limit") && NumberUtils.isParsable(request.get("limit"))) {
+                limit = Integer.parseInt(request.get("limit"));
+            }
+            if (request.containsKey("offset") && NumberUtils.isParsable(request.get("offset"))) {
+                offset = Integer.parseInt(request.get("offset"));
+            }
+            List<PermissionModel> permissions = permissionDao.getAll(name, limit, offset);
             ResponseGetPermissionList response = new ResponseGetPermissionList();
             response.setTotal(permissions.size());
             response.setPermissions(permissions);
-            response.setPerPage(request.getLimit());
             return response;
         });
         return completeOKWithFuture(future, Jackson.marshaller());

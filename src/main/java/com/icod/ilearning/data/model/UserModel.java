@@ -48,13 +48,8 @@ public class UserModel {
     @Column(name = "status")
     int status;
 
-    @JsonIgnore
-    @ManyToMany(cascade = {CascadeType.ALL}, fetch = FetchType.EAGER)
-    @JoinTable(name = "user_role", joinColumns = {@JoinColumn(name = "user_id")}, inverseJoinColumns = {@JoinColumn(name = "role_id")})
-    Set<RoleModel> roles = new HashSet<>();
-
-    @JsonIgnore
-    @ManyToMany(cascade = {CascadeType.ALL}, fetch = FetchType.EAGER)
-    @JoinTable(name = "user_permission", joinColumns = {@JoinColumn(name = "user_id")}, inverseJoinColumns = {@JoinColumn(name = "permission_id")})
-    Set<PermissionModel> permissions = new HashSet<>();
+    @JsonProperty("role")
+    @OneToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "role_id", referencedColumnName = "id")
+    RoleModel role;
 }

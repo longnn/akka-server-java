@@ -1,4 +1,4 @@
-package com.icod.ilearning.services.protocol.user.list;
+package com.icod.ilearning.services.protocol.user.find;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.icod.ilearning.data.model.UserModel;
@@ -10,8 +10,6 @@ import java.util.List;
 public class ResponseGetUserList {
     @JsonProperty("total")
     long total;
-    @JsonProperty("perPage")
-    long perPage;
-    @JsonProperty("users")
+    @JsonProperty("items")
     List<UserModel> users;
 }

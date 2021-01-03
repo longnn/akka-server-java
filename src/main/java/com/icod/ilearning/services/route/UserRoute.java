@@ -3,18 +3,19 @@ package com.icod.ilearning.services.route;
 import akka.http.javadsl.marshallers.jackson.Jackson;
 import akka.http.javadsl.model.StatusCodes;
 import akka.http.javadsl.server.*;
-import com.icod.ilearning.data.dao.PermissionDao;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.icod.ilearning.data.dao.RoleDao;
 import com.icod.ilearning.data.dao.UserDao;
-import com.icod.ilearning.data.model.PermissionModel;
 import com.icod.ilearning.data.model.RoleModel;
 import com.icod.ilearning.data.model.UserModel;
-import com.icod.ilearning.services.protocol.user.assignPermission.RequestAssignUserPermission;
-import com.icod.ilearning.services.protocol.user.assignRole.RequestAssignUserRole;
+import com.icod.ilearning.services.protocol.user.checkEmail.RequestCheckEmail;
+import com.icod.ilearning.services.protocol.user.checkEmail.ResponseCheckEmail;
 import com.icod.ilearning.services.protocol.user.create.RequestCreateUser;
 import com.icod.ilearning.services.protocol.user.create.ResponseCreateUser;
-import com.icod.ilearning.services.protocol.user.list.RequestGetUserList;
-import com.icod.ilearning.services.protocol.user.list.ResponseGetUserList;
+import com.icod.ilearning.services.protocol.user.deleteUsers.RequestDeleteUsers;
+import com.icod.ilearning.services.protocol.user.find.RequestFindUsers;
+import com.icod.ilearning.services.protocol.user.find.ResponseGetUserList;
 import com.icod.ilearning.services.protocol.user.update.RequestUpdateUser;
 import com.icod.ilearning.util.SecurityUtil;
 import com.icod.ilearning.util.ValidationUtil;
@@ -29,62 +30,74 @@ import java.util.concurrent.CompletableFuture;
 public class UserRoute extends AllDirectives {
 
     final UserDao userDao = new UserDao();
-    final RoleDao roleDao = new RoleDao();
     final Config config = ConfigFactory.load();
-    final PermissionDao permissionDao = new PermissionDao();
-
+    final ObjectMapper objectMapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,false);
     public UserRoute() {
     }
-
+    /*
+    POST   : /users -> CREATE USER
+    POST   : /users/me -> FIND LOGGED IN USER
+    POST   : /users/find -> FIND USERS
+    POST   : /users/checkEmail -> IS UNIQUE EMAIL
+    GET    : /users/{id} -> FETCH ID
+    PUT    : /users/{id} -> UPDATE USER
+    DELETE : /users/{id} -> DELETE USER
+    DELETE : /users/deleteItems -> DELETE USERS
+    */
     public Route createRoute() {
-        return pathEnd(() ->
-                get(() -> entity(Jackson.unmarshaller(RequestGetUserList.class), request -> getUsers(request))).orElse(
-                    post(() -> entity(Jackson.unmarshaller(RequestCreateUser.class), request -> createUser(request))))
-                ).orElse(
+        return  pathEnd(() -> post(() -> createUser())).orElse(
                 path(PathMatchers.longSegment(), id ->
                     pathEnd(() ->
                         get(() -> getUser(id)).orElse(
                         put(() -> updateUser(id)).orElse(
                         delete(() -> deleteUser(id))))
                     )
-                )).orElse(
-                    path(PathMatchers.longSegment().slash("assignRole"), id -> post(() -> entity(Jackson.unmarshaller(RequestAssignUserRole.class), request -> assignRole(id, request)))
-                )).orElse(
-                    path(PathMatchers.longSegment().slash("assignPermission"), id -> post(() -> entity(Jackson.unmarshaller(RequestAssignUserPermission.class), request -> assignPermission(id, request)))
-                )).orElse(
-                    path("me",()-> getUserByToken())
-                );
+                ))
+                .orElse(path("me", () -> getUserByToken()))
+                .orElse(path("find", () -> post(() -> find()))
+                .orElse(path("checkEmail", () -> post(() -> checkEmail())))
+                .orElse(path("deleteItems", () -> put(()-> deleteUsers())))
+        );
     }
 
-    private Route getUsers(RequestGetUserList request) {
-        CompletableFuture<ResponseGetUserList> future = CompletableFuture.supplyAsync(() -> {
-            List<UserModel> users = userDao.getAll(request.getName());
-            ResponseGetUserList response = new ResponseGetUserList();
-            response.setTotal(users.size());
-            response.setUsers(users);
-            response.setPerPage(request.getLimit());
-            return response;
+    private Route checkEmail() {
+        return entity(Jackson.unmarshaller(RequestCheckEmail.class), request -> {
+            boolean isExisted = userDao.isEmailExists(request.getEmail());
+            ResponseCheckEmail response = new ResponseCheckEmail(isExisted);
+            return completeOK(response,Jackson.marshaller());
         });
-        return completeOKWithFuture(future, Jackson.marshaller());
     }
 
-    private Route getUserByToken(){
-        return optionalHeaderValueByName("Authorization",opHeader -> {
-            if(!opHeader.isPresent()){
-                return complete(StatusCodes.UNAUTHORIZED,"unauthorized");
+    private Route find() {
+        return entity(Jackson.unmarshaller(objectMapper,RequestFindUsers.class), request -> {
+            CompletableFuture<ResponseGetUserList> future = CompletableFuture.supplyAsync(() -> {
+                List<UserModel> users = userDao.getAll(null);
+                ResponseGetUserList response = new ResponseGetUserList();
+                response.setTotal(users.size());
+                response.setUsers(users);
+                return response;
+            });
+            return completeOKWithFuture(future, Jackson.marshaller());
+        });
+    }
+
+    private Route getUserByToken() {
+        return optionalHeaderValueByName("Authorization", opHeader -> {
+            if (!opHeader.isPresent()) {
+                return complete(StatusCodes.UNAUTHORIZED, "unauthorized");
             }
             String secretKey = config.getString("security.jwt.secret");
-            String jwt = opHeader.get().replace("Bearer ","");
+            String jwt = opHeader.get().replace("Bearer ", "");
             try {
                 Claims claims = SecurityUtil.decodeJWT(jwt, secretKey);
-                long userId = claims.get("userId",Long.class);
+                long userId = claims.get("userId", Long.class);
                 UserDao userDao = new UserDao();
                 UserModel user = userDao.findById(userId);
-                if(user == null){
-                    return complete(StatusCodes.UNAUTHORIZED,"unauthorized");
+                if (user == null) {
+                    return complete(StatusCodes.UNAUTHORIZED, "unauthorized");
                 }
-                return complete(StatusCodes.OK,user,Jackson.marshaller());
-            }catch (Exception e) {
+                return complete(StatusCodes.OK, user, Jackson.marshaller());
+            } catch (Exception e) {
                 return complete(StatusCodes.UNAUTHORIZED, "invalid or expired token");
             }
         });
@@ -97,35 +110,44 @@ public class UserRoute extends AllDirectives {
         }
         return complete(StatusCodes.OK, user, Jackson.marshaller());
     }
-    
-    private Route createUser(RequestCreateUser request) {
-        ResponseCreateUser response;
-        // VALIDATE
-        if (ValidationUtil.isNullOrEmpty(request.getName())) {
-            return reject(Rejections.malformedFormField("name","name required"));
-        }
-        if (!ValidationUtil.isValidEmail(request.getEmail())) {
-            return reject(Rejections.malformedFormField("email","invalid email address"));
-        }
-        if (userDao.isEmailExists(request.getEmail())) {
-            return reject(Rejections.malformedFormField("email","email has already existed"));
-        }
-        if (!ValidationUtil.isValidPassword(request.getPassword())) {
-            return reject(Rejections.malformedFormField("password","password required and must contain at lease 8 characters"));
-        }
-        UserModel user = new UserModel();
-        user.setName(request.getName());
-        user.setEmail(request.getEmail());
-        user.setPassword(SecurityUtil.md5(request.getPassword()));
-        user.setCreatedAt(new Date());
-        user.setUpdatedAt(new Date());
-        user.setStatus(request.getStatus());
-        Long id = userDao.insert(user);
-        if (id == null) {
-            return complete(StatusCodes.INTERNAL_SERVER_ERROR, "fail to delete user");
-        } else {
-            return complete(StatusCodes.OK, "user create success");
-        }
+
+    private Route createUser() {
+        return entity(Jackson.unmarshaller(RequestCreateUser.class), request -> {
+            ResponseCreateUser response;
+            // VALIDATE
+            if (ValidationUtil.isNullOrEmpty(request.getName())) {
+                return reject(Rejections.malformedFormField("name", "name required"));
+            }
+            if (!ValidationUtil.isValidEmail(request.getEmail())) {
+                return reject(Rejections.malformedFormField("email", "invalid email address"));
+            }
+            if (userDao.isEmailExists(request.getEmail())) {
+                return reject(Rejections.malformedFormField("email", "email has already existed"));
+            }
+            if (!ValidationUtil.isValidPassword(request.getPassword())) {
+                return reject(Rejections.malformedFormField("password", "password required and must contain at lease 8 characters"));
+            }
+            if (!ValidationUtil.isNumber(request.getRoleId())) {
+                return reject(Rejections.malformedFormField("role", "role required"));
+            }
+            RoleDao roleDao = new RoleDao();
+            RoleModel role = roleDao.findById(Integer.parseInt(request.getRoleId()));
+
+            UserModel user = new UserModel();
+            user.setName(request.getName());
+            user.setEmail(request.getEmail());
+            user.setPassword(SecurityUtil.md5(request.getPassword()));
+            user.setCreatedAt(new Date());
+            user.setUpdatedAt(new Date());
+            user.setStatus(Integer.parseInt(request.getStatus()));
+            user.setRole(role);
+            Long id = userDao.create(user);
+            if (id == null) {
+                return complete(StatusCodes.INTERNAL_SERVER_ERROR, "fail to delete user");
+            } else {
+                return complete(StatusCodes.OK, "user create success");
+            }
+        });
     }
 
     private Route updateUser(long id) {
@@ -134,8 +156,8 @@ public class UserRoute extends AllDirectives {
             return complete(StatusCodes.NOT_FOUND, "user not found");
         }
         return entity(Jackson.unmarshaller(RequestUpdateUser.class), request -> {
-            if (!ValidationUtil.isNullOrEmpty(request.getName())) {
-                user.setName(request.getName());
+            if (!ValidationUtil.isNullOrEmpty(request.getFullname())) {
+                user.setName(request.getFullname());
             }
             if (ValidationUtil.isValidPassword(request.getPassword())) {
                 user.setPassword(SecurityUtil.md5(request.getPassword()));
@@ -159,35 +181,13 @@ public class UserRoute extends AllDirectives {
         return complete(StatusCodes.OK, "user deleted");
     }
 
-    private Route assignRole(long id, RequestAssignUserRole request) {
-        UserModel user = userDao.findById(id);
-        if (user == null) {
-            return complete(StatusCodes.NOT_FOUND, "user not found");
-        }
-        if (request.getRoleIds().length == 0) {
-            return complete(StatusCodes.BAD_REQUEST, "roles required");
-        }
-        List<RoleModel> roles = roleDao.getRoleByIds(request.getRoleIds());
-        if (userDao.update(user)) {
-            return complete(StatusCodes.OK, "set user role success");
-        } else {
-            return complete(StatusCodes.INTERNAL_SERVER_ERROR, "set user role fail");
-        }
-    }
-
-    private Route assignPermission(long id, RequestAssignUserPermission request) {
-        UserModel user = userDao.findById(id);
-        if (user == null) {
-            return complete(StatusCodes.NOT_FOUND, "user not found");
-        }
-        if (request.getPermissionIds().length == 0) {
-            return complete(StatusCodes.BAD_REQUEST, "permissions required");
-        }
-        List<PermissionModel> permissions = permissionDao.getByIds(request.getPermissionIds());
-        if (userDao.update(user)) {
-            return complete(StatusCodes.OK, "set user permissions success");
-        } else {
-            return complete(StatusCodes.INTERNAL_SERVER_ERROR, "set user permissions fail");
-        }
+    private Route deleteUsers() {
+        return entity(Jackson.unmarshaller(objectMapper, RequestDeleteUsers.class), request -> {
+            if(userDao.deleteItems(request.getIds())) {
+                return complete(StatusCodes.OK, "users deleted");
+            }else {
+                return complete(StatusCodes.INTERNAL_SERVER_ERROR, "fail to delete users");
+            }
+        });
     }
 }

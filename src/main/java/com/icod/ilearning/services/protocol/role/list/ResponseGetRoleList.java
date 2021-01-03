@@ -8,12 +8,10 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-@JsonPropertyOrder({"total","per_page","items"})
+@JsonPropertyOrder({"total","items"})
 public class ResponseGetRoleList {
     @JsonProperty("total")
     Integer total;
-    @JsonProperty("per_page")
-    Integer perPage;
     @JsonProperty("items")
     List<RoleModel> roles;
 }

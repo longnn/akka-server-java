@@ -9,12 +9,10 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-@JsonPropertyOrder({"total","per_page","items"})
+@JsonPropertyOrder({"total","items"})
 public class ResponseGetPermissionList {
     @JsonProperty("total")
     long total;
-    @JsonProperty("per_page")
-    long perPage;
     @JsonProperty("items")
     List<PermissionModel> permissions;
 }

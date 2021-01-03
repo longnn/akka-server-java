@@ -5,8 +5,8 @@ import lombok.Data;
 
 @Data
 public class RequestUpdateUser {
-    @JsonProperty("name")
-    String name;
+    @JsonProperty("fullname")
+    String fullname;
     @JsonProperty("password")
     String password;
 }

@@ -12,7 +12,12 @@ import javax.persistence.criteria.Root;
 import java.util.ArrayList;
 import java.util.List;
 
-public class UserDao {
+public class UserDao extends CrudDao<UserModel>{
+
+    public UserDao() {
+        super(UserModel.class);
+    }
+
     public List<UserModel> getAll(String name) {
         Session session = null;
         List<UserModel> result = new ArrayList<>();
@@ -58,54 +63,6 @@ public class UserDao {
         } catch (Exception e) {
             e.printStackTrace();
             return null;
-        } finally {
-            if (session != null) session.close();
-        }
-    }
-
-    public Long insert(UserModel user) {
-        Session session = null;
-        try {
-            session = HibernateUtil.getSessionFactory().openSession();
-            session.beginTransaction();
-            long id = (Long) session.save(user);
-            session.getTransaction().commit();
-            return id;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        } finally {
-            if (session != null) session.close();
-        }
-    }
-
-    public boolean update(UserModel user) {
-        Session session = null;
-        try {
-            session = HibernateUtil.getSessionFactory().openSession();
-            session.beginTransaction();
-            session.update(user);
-            session.getTransaction().commit();
-            return true;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        } finally {
-            if (session != null) session.close();
-        }
-    }
-
-    public boolean delete(UserModel user) {
-        Session session = null;
-        try {
-            session = HibernateUtil.getSessionFactory().openSession();
-            session.beginTransaction();
-            session.delete(user);
-            session.getTransaction().commit();
-            return true;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
         } finally {
             if (session != null) session.close();
         }

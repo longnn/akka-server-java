@@ -1,4 +1,4 @@
-package com.icod.ilearning.services.protocol.user.list;
+package com.icod.ilearning.services.protocol.user.find;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;

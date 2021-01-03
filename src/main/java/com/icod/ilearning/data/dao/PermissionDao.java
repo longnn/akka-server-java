@@ -27,7 +27,7 @@ public class PermissionDao {
         return result;
     }
 
-    public List<PermissionModel> getAll(String name,int limit, int offset){
+    public List<PermissionModel> getAll(String name,Integer limit, Integer offset){
         Session session = null;
         List<PermissionModel> result = new ArrayList<>();
         try {
@@ -38,8 +38,8 @@ public class PermissionDao {
             criteria.select(permission);
             if(name!=null) criteria.where(builder.like(permission.get("name"),"%"+name+"%"));
             Query<PermissionModel> query = session.createQuery(criteria);
-            query.setFirstResult(offset);
-            query.setMaxResults(limit);
+            if (limit != null) query.setMaxResults(limit);
+            if (offset != null) query.setFirstResult(offset);
             result = query.getResultList();
         } catch (Exception e) {
             e.printStackTrace();

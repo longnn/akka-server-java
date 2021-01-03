@@ -41,6 +41,7 @@ public class RoleDao {
             Root<RoleModel> role = criteria.from(RoleModel.class);
             criteria.select(role);
             if (name != null) criteria.where(builder.like(role.get("name"), "%" + name + "%"));
+            criteria.where(builder.equal(role.get("status"),1));
             Query<RoleModel> query = session.createQuery(criteria);
             if (limit != null) query.setMaxResults(limit);
             if (offset != null) query.setFirstResult(offset);
