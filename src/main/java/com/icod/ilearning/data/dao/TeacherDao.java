@@ -1,6 +1,6 @@
 package com.icod.ilearning.data.dao;
 
-import com.icod.ilearning.data.model.TeacherModel;
+import com.icod.ilearning.data.model.Teacher;
 import com.icod.ilearning.util.HibernateUtil;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
@@ -12,14 +12,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class TeacherDao {
-    public List<TeacherModel> getAll(String name){
+    public List<Teacher> getAll(String name){
         Session session = null;
-        List<TeacherModel> result = new ArrayList<>();
+        List<Teacher> result = new ArrayList<>();
         try {
             session = HibernateUtil.getSessionFactory().openSession();
             CriteriaBuilder builder = session.getCriteriaBuilder();
-            CriteriaQuery<TeacherModel> criteria = builder.createQuery(TeacherModel.class);
-            Root<TeacherModel> user = criteria.from(TeacherModel.class);
+            CriteriaQuery<Teacher> criteria = builder.createQuery(Teacher.class);
+            Root<Teacher> user = criteria.from(Teacher.class);
             criteria.select(user);
             if(name!=null) criteria.where(builder.like(user.get("name"),"%"+name+"%"));
             result = session.createQuery(criteria).getResultList();
@@ -30,11 +30,11 @@ public class TeacherDao {
         }
         return result;
     }
-    public TeacherModel findById(long id){
+    public Teacher findById(long id){
         Session session = null;
         try {
             session = HibernateUtil.getSessionFactory().openSession();
-            Query<TeacherModel> query = session.createQuery("from TeacherModel where id=:id");
+            Query<Teacher> query = session.createQuery("from Teacher where id=:id");
             query.setParameter("id",id);
             return query.getSingleResult();
         } catch (Exception e) {
@@ -44,7 +44,7 @@ public class TeacherDao {
             if(session!=null) session.close();
         }
     }
-    public Long insert(TeacherModel user){
+    public Long insert(Teacher user){
         Session session = null;
         try {
             session = HibernateUtil.getSessionFactory().openSession();
@@ -59,7 +59,7 @@ public class TeacherDao {
             if(session!=null) session.close();
         }
     }
-    public boolean update(TeacherModel user){
+    public boolean update(Teacher user){
         Session session = null;
         try {
             session = HibernateUtil.getSessionFactory().openSession();
@@ -74,7 +74,7 @@ public class TeacherDao {
             if(session!=null) session.close();
         }
     }
-    public boolean delete(TeacherModel user){
+    public boolean delete(Teacher user){
         Session session = null;
         try {
             session = HibernateUtil.getSessionFactory().openSession();

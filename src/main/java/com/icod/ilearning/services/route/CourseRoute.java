@@ -8,9 +8,8 @@ import akka.http.javadsl.server.Rejections;
 import akka.http.javadsl.server.Route;
 import com.github.slugify.Slugify;
 import com.icod.ilearning.data.dao.CourseDao;
-import com.icod.ilearning.data.model.CourseModel;
+import com.icod.ilearning.data.model.Course;
 import com.icod.ilearning.services.protocol.course.create.RequestCreateCourse;
-import com.icod.ilearning.services.protocol.course.create.ResponseCreateCourse;
 import com.icod.ilearning.services.protocol.course.list.RequestGetCourseList;
 import com.icod.ilearning.services.protocol.course.list.ResponseGetCourseList;
 import com.icod.ilearning.services.protocol.course.update.RequestUpdateCourse;
@@ -40,7 +39,7 @@ public class CourseRoute extends AllDirectives {
     }
     private Route getCourse(RequestGetCourseList request){
         CompletableFuture<ResponseGetCourseList> future = CompletableFuture.supplyAsync(() -> {
-            List<CourseModel> courses = courseDao.getAll(request.getName());
+            List<Course> courses = courseDao.getAll(request.getName());
             ResponseGetCourseList response = new ResponseGetCourseList();
             response.setTotal(courses.size());
             response.setCourses(courses);
@@ -50,7 +49,7 @@ public class CourseRoute extends AllDirectives {
         return completeOKWithFuture(future, Jackson.marshaller());
     }
     private Route getCourse(long id){
-        CourseModel course = courseDao.findById(id);
+        Course course = courseDao.findById(id);
         if(course==null){
             return complete(StatusCodes.NOT_FOUND,"course not found");
         }
@@ -61,7 +60,7 @@ public class CourseRoute extends AllDirectives {
         if(ValidationUtil.isNullOrEmpty(request.getName())){
             return reject(Rejections.malformedFormField("title","title required"));
         }
-        CourseModel course = new CourseModel();
+        Course course = new Course();
         course.setTitle(request.getTitle());
         course.setSlug(new Slugify().slugify(StringUtil.removeAccent(request.getTitle())));
         course.setImageUrl(request.getImageUrl());
@@ -76,7 +75,7 @@ public class CourseRoute extends AllDirectives {
         }
     }
     private Route updateCourse(long id){
-        CourseModel course = courseDao.findById(id);
+        Course course = courseDao.findById(id);
         if(course==null){
             return complete(StatusCodes.NOT_FOUND,"course not found");
         }
@@ -95,7 +94,7 @@ public class CourseRoute extends AllDirectives {
         });
     }
     private Route deleteCourse(long id){
-        CourseModel course = courseDao.findById(id);
+        Course course = courseDao.findById(id);
         if(course==null){
             return complete(StatusCodes.NOT_FOUND,"course not found");
         }

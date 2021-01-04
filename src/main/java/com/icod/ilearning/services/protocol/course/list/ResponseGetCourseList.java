@@ -1,8 +1,7 @@
 package com.icod.ilearning.services.protocol.course.list;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.icod.ilearning.data.model.CourseModel;
-import com.icod.ilearning.data.model.UserModel;
+import com.icod.ilearning.data.model.Course;
 import lombok.Data;
 
 import java.util.List;
@@ -14,5 +13,5 @@ public class ResponseGetCourseList {
     @JsonProperty("perPage")
     long perPage;
     @JsonProperty("courses")
-    List<CourseModel> courses;
+    List<Course> courses;
 }

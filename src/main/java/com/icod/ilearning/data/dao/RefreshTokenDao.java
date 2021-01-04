@@ -1,7 +1,6 @@
 package com.icod.ilearning.data.dao;
 
-import com.icod.ilearning.data.model.RefreshTokenModel;
-import com.icod.ilearning.data.model.RoleModel;
+import com.icod.ilearning.data.model.RefreshToken;
 import com.icod.ilearning.util.HibernateUtil;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
@@ -10,11 +9,11 @@ import javax.persistence.NoResultException;
 
 public class RefreshTokenDao {
 
-    public RefreshTokenModel find(String refreshToken) {
+    public RefreshToken find(String refreshToken) {
         Session session = null;
         try {
             session = HibernateUtil.getSessionFactory().openSession();
-            Query<RefreshTokenModel> query = session.createQuery("from RefreshTokenModel where token=:refreshToken");
+            Query<RefreshToken> query = session.createQuery("from RefreshToken where token=:refreshToken");
             query.setParameter("refreshToken", refreshToken);
             return query.getSingleResult();
         } catch (Exception e) {
@@ -25,11 +24,11 @@ public class RefreshTokenDao {
         }
     }
 
-    public RefreshTokenModel findByUserId(long userId) {
+    public RefreshToken findByUserId(long userId) {
         Session session = null;
         try {
             session = HibernateUtil.getSessionFactory().openSession();
-            Query<RefreshTokenModel> query = session.createQuery("from RefreshTokenModel where userId=:userId");
+            Query<RefreshToken> query = session.createQuery("from RefreshToken where userId=:userId");
             query.setParameter("userId", userId);
             return query.getSingleResult();
         } catch (Exception e) {
@@ -42,7 +41,7 @@ public class RefreshTokenDao {
         }
     }
 
-    public Long insert(RefreshTokenModel refreshToken) {
+    public Long insert(RefreshToken refreshToken) {
         Session session = null;
         try {
             session = HibernateUtil.getSessionFactory().openSession();
@@ -58,7 +57,7 @@ public class RefreshTokenDao {
         }
     }
 
-    public boolean update(RefreshTokenModel refreshToken) {
+    public boolean update(RefreshToken refreshToken) {
         Session session = null;
         try {
             session = HibernateUtil.getSessionFactory().openSession();
@@ -74,7 +73,7 @@ public class RefreshTokenDao {
         }
     }
 
-    public boolean delete(RefreshTokenModel refreshToken) {
+    public boolean delete(RefreshToken refreshToken) {
         Session session = null;
         try {
             session = HibernateUtil.getSessionFactory().openSession();

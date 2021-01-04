@@ -7,7 +7,7 @@ import akka.http.javadsl.server.PathMatchers;
 import akka.http.javadsl.server.Rejections;
 import akka.http.javadsl.server.Route;
 import com.icod.ilearning.data.dao.TeacherDao;
-import com.icod.ilearning.data.model.TeacherModel;
+import com.icod.ilearning.data.model.Teacher;
 import com.icod.ilearning.services.protocol.teacher.create.RequestCreateTeacher;
 import com.icod.ilearning.services.protocol.teacher.list.RequestGetTeacherList;
 import com.icod.ilearning.services.protocol.teacher.list.ResponseGetTeacherList;
@@ -36,7 +36,7 @@ public class TeacherRoute extends AllDirectives {
     }
     private Route getTeacher(RequestGetTeacherList request){
         CompletableFuture<ResponseGetTeacherList> future = CompletableFuture.supplyAsync(() -> {
-            List<TeacherModel> teachers = teacherDao.getAll(request.getName());
+            List<Teacher> teachers = teacherDao.getAll(request.getName());
             ResponseGetTeacherList response = new ResponseGetTeacherList();
             response.setTotal(teachers.size());
             response.setTeachers(teachers);
@@ -46,7 +46,7 @@ public class TeacherRoute extends AllDirectives {
         return completeOKWithFuture(future, Jackson.marshaller());
     }
     private Route getTeacher(long id){
-        TeacherModel teacher = teacherDao.findById(id);
+        Teacher teacher = teacherDao.findById(id);
         if(teacher==null){
             return complete(StatusCodes.NOT_FOUND,"teacher not found");
         }
@@ -57,7 +57,7 @@ public class TeacherRoute extends AllDirectives {
         if(ValidationUtil.isNullOrEmpty(request.getFirstName())){
             return reject(Rejections.malformedFormField("title","title required"));
         }
-        TeacherModel teacher = new TeacherModel();
+        Teacher teacher = new Teacher();
         teacher.setFirstName(request.getFirstName());
         teacher.setLastName(request.getLastName());
         teacher.setCreatedAt(new Date());
@@ -70,7 +70,7 @@ public class TeacherRoute extends AllDirectives {
         }
     }
     private Route updateTeacher(long id){
-        TeacherModel teacher = teacherDao.findById(id);
+        Teacher teacher = teacherDao.findById(id);
         if(teacher==null){
             return complete(StatusCodes.NOT_FOUND,"teacher not found");
         }
@@ -90,7 +90,7 @@ public class TeacherRoute extends AllDirectives {
         });
     }
     private Route deleteTeacher(long id){
-        TeacherModel teacher = teacherDao.findById(id);
+        Teacher teacher = teacherDao.findById(id);
         if(teacher==null){
             return complete(StatusCodes.NOT_FOUND,"teacher not found");
         }

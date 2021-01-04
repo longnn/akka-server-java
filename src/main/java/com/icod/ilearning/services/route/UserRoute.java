@@ -7,8 +7,9 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.icod.ilearning.data.dao.RoleDao;
 import com.icod.ilearning.data.dao.UserDao;
-import com.icod.ilearning.data.model.RoleModel;
-import com.icod.ilearning.data.model.UserModel;
+import com.icod.ilearning.data.model.Role;
+import com.icod.ilearning.data.model.User;
+import com.icod.ilearning.services.protocol.user.changeStatus.RequestChangeUserStatus;
 import com.icod.ilearning.services.protocol.user.checkEmail.RequestCheckEmail;
 import com.icod.ilearning.services.protocol.user.checkEmail.ResponseCheckEmail;
 import com.icod.ilearning.services.protocol.user.create.RequestCreateUser;
@@ -31,9 +32,11 @@ public class UserRoute extends AllDirectives {
 
     final UserDao userDao = new UserDao();
     final Config config = ConfigFactory.load();
-    final ObjectMapper objectMapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,false);
+    final ObjectMapper objectMapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
     public UserRoute() {
     }
+
     /*
     POST   : /users -> CREATE USER
     POST   : /users/me -> FIND LOGGED IN USER
@@ -41,37 +44,38 @@ public class UserRoute extends AllDirectives {
     POST   : /users/checkEmail -> IS UNIQUE EMAIL
     GET    : /users/{id} -> FETCH ID
     PUT    : /users/{id} -> UPDATE USER
+    PUT    : /users/updateStatus -> CHANGE USER STATUS
     DELETE : /users/{id} -> DELETE USER
     DELETE : /users/deleteItems -> DELETE USERS
     */
     public Route createRoute() {
-        return  pathEnd(() -> post(() -> createUser())).orElse(
+        return pathEnd(() -> post(() -> createUser())).orElse(
                 path(PathMatchers.longSegment(), id ->
                     pathEnd(() ->
                         get(() -> getUser(id)).orElse(
                         put(() -> updateUser(id)).orElse(
-                        delete(() -> deleteUser(id))))
-                    )
+                        delete(() -> deleteUser(id)))))
                 ))
                 .orElse(path("me", () -> getUserByToken()))
                 .orElse(path("find", () -> post(() -> find()))
                 .orElse(path("checkEmail", () -> post(() -> checkEmail())))
-                .orElse(path("deleteItems", () -> put(()-> deleteUsers())))
-        );
+                .orElse(path("deleteItems", () -> put(() -> deleteUsers())))
+                .orElse(path("updateStatus", () -> put(() -> updateStatus())))
+                );
     }
 
     private Route checkEmail() {
         return entity(Jackson.unmarshaller(RequestCheckEmail.class), request -> {
             boolean isExisted = userDao.isEmailExists(request.getEmail());
             ResponseCheckEmail response = new ResponseCheckEmail(isExisted);
-            return completeOK(response,Jackson.marshaller());
+            return completeOK(response, Jackson.marshaller());
         });
     }
 
     private Route find() {
-        return entity(Jackson.unmarshaller(objectMapper,RequestFindUsers.class), request -> {
+        return entity(Jackson.unmarshaller(objectMapper, RequestFindUsers.class), request -> {
             CompletableFuture<ResponseGetUserList> future = CompletableFuture.supplyAsync(() -> {
-                List<UserModel> users = userDao.getAll(null);
+                List<User> users = userDao.getAll(null);
                 ResponseGetUserList response = new ResponseGetUserList();
                 response.setTotal(users.size());
                 response.setUsers(users);
@@ -92,7 +96,7 @@ public class UserRoute extends AllDirectives {
                 Claims claims = SecurityUtil.decodeJWT(jwt, secretKey);
                 long userId = claims.get("userId", Long.class);
                 UserDao userDao = new UserDao();
-                UserModel user = userDao.findById(userId);
+                User user = userDao.findById(userId);
                 if (user == null) {
                     return complete(StatusCodes.UNAUTHORIZED, "unauthorized");
                 }
@@ -104,7 +108,7 @@ public class UserRoute extends AllDirectives {
     }
 
     private Route getUser(long id) {
-        UserModel user = userDao.findById(id);
+        User user = userDao.findById(id);
         if (user == null) {
             return complete(StatusCodes.NOT_FOUND, "user not found");
         }
@@ -131,9 +135,9 @@ public class UserRoute extends AllDirectives {
                 return reject(Rejections.malformedFormField("role", "role required"));
             }
             RoleDao roleDao = new RoleDao();
-            RoleModel role = roleDao.findById(Integer.parseInt(request.getRoleId()));
+            Role role = roleDao.findById(Integer.parseInt(request.getRoleId()));
 
-            UserModel user = new UserModel();
+            User user = new User();
             user.setName(request.getName());
             user.setEmail(request.getEmail());
             user.setPassword(SecurityUtil.md5(request.getPassword()));
@@ -143,7 +147,7 @@ public class UserRoute extends AllDirectives {
             user.setRole(role);
             Long id = userDao.create(user);
             if (id == null) {
-                return complete(StatusCodes.INTERNAL_SERVER_ERROR, "fail to delete user");
+                return complete(StatusCodes.INTERNAL_SERVER_ERROR, "fail to create user");
             } else {
                 return complete(StatusCodes.OK, "user create success");
             }
@@ -151,7 +155,7 @@ public class UserRoute extends AllDirectives {
     }
 
     private Route updateUser(long id) {
-        UserModel user = userDao.findById(id);
+        User user = userDao.findById(id);
         if (user == null) {
             return complete(StatusCodes.NOT_FOUND, "user not found");
         }
@@ -171,7 +175,7 @@ public class UserRoute extends AllDirectives {
     }
 
     private Route deleteUser(long id) {
-        UserModel user = userDao.findById(id);
+        User user = userDao.findById(id);
         if (user == null) {
             return complete(StatusCodes.NOT_FOUND, "user not found");
         }
@@ -183,11 +187,22 @@ public class UserRoute extends AllDirectives {
 
     private Route deleteUsers() {
         return entity(Jackson.unmarshaller(objectMapper, RequestDeleteUsers.class), request -> {
-            if(userDao.deleteItems(request.getIds())) {
+            if (userDao.deleteItems(request.getIds())) {
                 return complete(StatusCodes.OK, "users deleted");
-            }else {
+            } else {
                 return complete(StatusCodes.INTERNAL_SERVER_ERROR, "fail to delete users");
             }
+        });
+    }
+
+    private Route updateStatus() {
+        return entity(Jackson.unmarshaller(objectMapper, RequestChangeUserStatus.class), request -> {
+            int status = Integer.parseInt(request.getStatus());
+           if(userDao.changeStatus(request.getIds(), status)) {
+               return complete(StatusCodes.OK, "users status updated");
+           } else {
+               return complete(StatusCodes.INTERNAL_SERVER_ERROR, "fail to update users status");
+           }
         });
     }
 }

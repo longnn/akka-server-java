@@ -9,7 +9,7 @@ import java.util.Date;
 
 @Data
 @ToString
-public class RequestGetUserList {
+public class RequestFindUsers {
     @JsonProperty("name")
     String name;
     @JsonProperty("role")

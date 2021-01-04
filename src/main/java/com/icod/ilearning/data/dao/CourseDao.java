@@ -1,6 +1,6 @@
 package com.icod.ilearning.data.dao;
 
-import com.icod.ilearning.data.model.CourseModel;
+import com.icod.ilearning.data.model.Course;
 import com.icod.ilearning.util.HibernateUtil;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
@@ -12,14 +12,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CourseDao {
-    public List<CourseModel> getAll(String name){
+    public List<Course> getAll(String name){
         Session session = null;
-        List<CourseModel> result = new ArrayList<>();
+        List<Course> result = new ArrayList<>();
         try {
             session = HibernateUtil.getSessionFactory().openSession();
             CriteriaBuilder builder = session.getCriteriaBuilder();
-            CriteriaQuery<CourseModel> criteria = builder.createQuery(CourseModel.class);
-            Root<CourseModel> user = criteria.from(CourseModel.class);
+            CriteriaQuery<Course> criteria = builder.createQuery(Course.class);
+            Root<Course> user = criteria.from(Course.class);
             criteria.select(user);
             if(name!=null) criteria.where(builder.like(user.get("name"),"%"+name+"%"));
             result = session.createQuery(criteria).getResultList();
@@ -30,11 +30,11 @@ public class CourseDao {
         }
         return result;
     }
-    public CourseModel findById(long id){
+    public Course findById(long id){
         Session session = null;
         try {
             session = HibernateUtil.getSessionFactory().openSession();
-            Query<CourseModel> query = session.createQuery("from CourseModel where id=:id");
+            Query<Course> query = session.createQuery("from Course where id=:id");
             query.setParameter("id",id);
             return query.getSingleResult();
         } catch (Exception e) {
@@ -44,7 +44,7 @@ public class CourseDao {
             if(session!=null) session.close();
         }
     }
-    public Long insert(CourseModel user){
+    public Long insert(Course user){
         Session session = null;
         try {
             session = HibernateUtil.getSessionFactory().openSession();
@@ -59,7 +59,7 @@ public class CourseDao {
             if(session!=null) session.close();
         }
     }
-    public boolean update(CourseModel user){
+    public boolean update(Course user){
         Session session = null;
         try {
             session = HibernateUtil.getSessionFactory().openSession();
@@ -74,7 +74,7 @@ public class CourseDao {
             if(session!=null) session.close();
         }
     }
-    public boolean delete(CourseModel user){
+    public boolean delete(Course user){
         Session session = null;
         try {
             session = HibernateUtil.getSessionFactory().openSession();

@@ -22,11 +22,11 @@
         <property name="hibernate.hikari.minimumIdle">10</property>
         <property name="hibernate.hikari.maximumPoolSize">20</property>
         <property name="hibernate.hikari.idleTimeout">300000</property>
-        <mapping class="com.icod.ilearning.data.model.UserModel"></mapping>
-        <mapping class="com.icod.ilearning.data.model.CourseModel"></mapping>
-        <mapping class="com.icod.ilearning.data.model.RoleModel"></mapping>
-        <mapping class="com.icod.ilearning.data.model.PermissionModel"></mapping>
-        <mapping class="com.icod.ilearning.data.model.TeacherModel"></mapping>
-        <mapping class="com.icod.ilearning.data.model.RefreshTokenModel"></mapping>
+        <mapping class="com.icod.ilearning.data.model.User"></mapping>
+        <mapping class="com.icod.ilearning.data.model.Course"></mapping>
+        <mapping class="com.icod.ilearning.data.model.Role"></mapping>
+        <mapping class="com.icod.ilearning.data.model.Permission"></mapping>
+        <mapping class="com.icod.ilearning.data.model.Teacher"></mapping>
+        <mapping class="com.icod.ilearning.data.model.RefreshToken"></mapping>
     </session-factory>
 </hibernate-configuration>

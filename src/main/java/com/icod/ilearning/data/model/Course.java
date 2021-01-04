@@ -1,28 +1,44 @@
 package com.icod.ilearning.data.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.Data;
 
 import javax.persistence.*;
 import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
 
 @Data
 @Entity
-@Table(name = "role")
-@JsonPropertyOrder({"id","name","created_at","updated_at","status"})
-public class RoleModel {
+@Table(name = "course")
+@JsonIgnoreProperties({"password"})
+@JsonPropertyOrder({"id","name","title","createdAt","updatedAt","status"})
+public class Course {
     @Id
+    @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @JsonProperty("id")
     long id;
 
-    @JsonProperty("name")
-    String name;
+    @JsonProperty("title")
+    @Column(name = "title")
+    String title;
+
+    @JsonProperty("slug")
+    @Column(name = "slug")
+    String slug;
+
+    @JsonProperty("imageUrl")
+    @Column(name = "imageUrl")
+    String imageUrl;
+
+    @JsonProperty("videoUrl")
+    @Column(name = "videoUrl")
+    String videoUrl;
+
+    @JsonProperty("description")
+    @Column(name = "description")
+    String description;
 
     @JsonProperty("created_at")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd hh:mm:ss")
@@ -37,8 +53,4 @@ public class RoleModel {
     @JsonProperty("status")
     @Column(name = "status")
     int status;
-
-    @ManyToMany(cascade = {CascadeType.ALL}, fetch = FetchType.EAGER)
-    @JoinTable(name = "role_permission", joinColumns = {@JoinColumn(name = "role_id")}, inverseJoinColumns = {@JoinColumn(name = "permission_id")})
-    Set<PermissionModel> permissions = new HashSet<>();
 }

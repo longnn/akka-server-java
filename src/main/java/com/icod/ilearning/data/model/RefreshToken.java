@@ -8,7 +8,7 @@ import java.util.Date;
 @Data
 @Entity
 @Table(name = "refresh_token")
-public class RefreshTokenModel {
+public class RefreshToken {
     @Id
     @Column(name = "id")
     long id;

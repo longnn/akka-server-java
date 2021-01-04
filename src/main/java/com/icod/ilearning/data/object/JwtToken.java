@@ -1,6 +1,6 @@
 package com.icod.ilearning.data.object;
 
-import com.icod.ilearning.data.model.RefreshTokenModel;
+import com.icod.ilearning.data.model.RefreshToken;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -10,6 +10,6 @@ import java.util.Date;
 @AllArgsConstructor
 public class JwtToken {
     String jwt;
-    RefreshTokenModel refreshToken;
+    RefreshToken refreshToken;
     Date expireDate;
 }

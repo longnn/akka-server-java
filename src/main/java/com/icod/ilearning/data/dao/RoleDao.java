@@ -1,6 +1,6 @@
 package com.icod.ilearning.data.dao;
 
-import com.icod.ilearning.data.model.RoleModel;
+import com.icod.ilearning.data.model.Role;
 import com.icod.ilearning.util.HibernateUtil;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
@@ -13,12 +13,12 @@ import java.util.List;
 
 public class RoleDao {
 
-    public List<RoleModel> getRoleByIds(Long[] ids) {
+    public List<Role> getRoleByIds(Long[] ids) {
         Session session = null;
-        List<RoleModel> result = new ArrayList<>();
+        List<Role> result = new ArrayList<>();
         try {
             session = HibernateUtil.getSessionFactory().openSession();
-            Query<RoleModel> query = session.createQuery("from RoleModel where id in :ids");
+            Query<Role> query = session.createQuery("from Role where id in :ids");
             query.setParameterList("ids", ids);
             result = query.getResultList();
         } catch (Exception e) {
@@ -31,18 +31,18 @@ public class RoleDao {
         return result;
     }
 
-    public List<RoleModel> getAll(String name, Integer limit, Integer offset) {
+    public List<Role> getAll(String name, Integer limit, Integer offset) {
         Session session = null;
-        List<RoleModel> result = new ArrayList<>();
+        List<Role> result = new ArrayList<>();
         try {
             session = HibernateUtil.getSessionFactory().openSession();
             CriteriaBuilder builder = session.getCriteriaBuilder();
-            CriteriaQuery<RoleModel> criteria = builder.createQuery(RoleModel.class);
-            Root<RoleModel> role = criteria.from(RoleModel.class);
+            CriteriaQuery<Role> criteria = builder.createQuery(Role.class);
+            Root<Role> role = criteria.from(Role.class);
             criteria.select(role);
             if (name != null) criteria.where(builder.like(role.get("name"), "%" + name + "%"));
             criteria.where(builder.equal(role.get("status"),1));
-            Query<RoleModel> query = session.createQuery(criteria);
+            Query<Role> query = session.createQuery(criteria);
             if (limit != null) query.setMaxResults(limit);
             if (offset != null) query.setFirstResult(offset);
             result = query.getResultList();
@@ -54,11 +54,11 @@ public class RoleDao {
         return result;
     }
 
-    public RoleModel findById(long id) {
+    public Role findById(long id) {
         Session session = null;
         try {
             session = HibernateUtil.getSessionFactory().openSession();
-            Query<RoleModel> query = session.createQuery("from RoleModel where id=:id");
+            Query<Role> query = session.createQuery("from Role where id=:id");
             query.setParameter("id", id);
             return query.getSingleResult();
         } catch (Exception e) {
@@ -69,7 +69,7 @@ public class RoleDao {
         }
     }
 
-    public Long insert(RoleModel role) {
+    public Long insert(Role role) {
         Session session = null;
         try {
             session = HibernateUtil.getSessionFactory().openSession();
@@ -85,7 +85,7 @@ public class RoleDao {
         }
     }
 
-    public boolean update(RoleModel role) {
+    public boolean update(Role role) {
         Session session = null;
         try {
             session = HibernateUtil.getSessionFactory().openSession();
@@ -101,7 +101,7 @@ public class RoleDao {
         }
     }
 
-    public boolean delete(RoleModel role) {
+    public boolean delete(Role role) {
         Session session = null;
         try {
             session = HibernateUtil.getSessionFactory().openSession();

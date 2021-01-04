@@ -1,22 +1,23 @@
 package com.icod.ilearning.data.model;
 
-import com.fasterxml.jackson.annotation.*;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.icod.ilearning.services.protocol.user.UserModelSerializer;
 import lombok.Data;
 
 import javax.persistence.*;
 import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
 
 @Data
 @Entity
 @Table(name = "user")
 @JsonIgnoreProperties({"password"})
-@JsonPropertyOrder({"id","name","email","createdAt","updatedAt"})
+@JsonPropertyOrder({"id", "name", "email", "createdAt", "updatedAt"})
 @JsonSerialize(using = UserModelSerializer.class)
-public class UserModel {
+public class User {
     @Id
     @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -51,5 +52,5 @@ public class UserModel {
     @JsonProperty("role")
     @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "role_id", referencedColumnName = "id")
-    RoleModel role;
+    Role role;
 }

@@ -12,7 +12,7 @@ import java.util.Date;
 @Entity
 @Table(name = "permission")
 @JsonPropertyOrder({"id","name","created_at","updated_at","status"})
-public class PermissionModel {
+public class Permission {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @JsonProperty("id")

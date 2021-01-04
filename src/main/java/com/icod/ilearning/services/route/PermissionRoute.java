@@ -7,14 +7,10 @@ import akka.http.javadsl.server.PathMatchers;
 import akka.http.javadsl.server.Rejections;
 import akka.http.javadsl.server.Route;
 import com.icod.ilearning.data.dao.PermissionDao;
-import com.icod.ilearning.data.model.PermissionModel;
-import com.icod.ilearning.data.model.RoleModel;
-import com.icod.ilearning.services.protocol.course.list.ResponseGetCourseList;
+import com.icod.ilearning.data.model.Permission;
 import com.icod.ilearning.services.protocol.permission.create.RequestCreatePermission;
-import com.icod.ilearning.services.protocol.permission.list.RequestGetPermissionList;
 import com.icod.ilearning.services.protocol.permission.list.ResponseGetPermissionList;
 import com.icod.ilearning.services.protocol.permission.update.RequestUpdatePermission;
-import com.icod.ilearning.services.protocol.role.list.ResponseGetRoleList;
 import com.icod.ilearning.util.ValidationUtil;
 import org.apache.commons.lang3.math.NumberUtils;
 
@@ -54,7 +50,7 @@ public class PermissionRoute extends AllDirectives {
             if (request.containsKey("offset") && NumberUtils.isParsable(request.get("offset"))) {
                 offset = Integer.parseInt(request.get("offset"));
             }
-            List<PermissionModel> permissions = permissionDao.getAll(name, limit, offset);
+            List<Permission> permissions = permissionDao.getAll(name, limit, offset);
             ResponseGetPermissionList response = new ResponseGetPermissionList();
             response.setTotal(permissions.size());
             response.setPermissions(permissions);
@@ -64,7 +60,7 @@ public class PermissionRoute extends AllDirectives {
     }
 
     private Route getPermission(long id){
-        PermissionModel permission = permissionDao.findById(id);
+        Permission permission = permissionDao.findById(id);
         if(permission==null){
             return complete(StatusCodes.NOT_FOUND,"permission not found");
         }
@@ -76,7 +72,7 @@ public class PermissionRoute extends AllDirectives {
         if(ValidationUtil.isNullOrEmpty(request.getName())){
             return reject(Rejections.malformedFormField("title","title required"));
         }
-        PermissionModel permission = new PermissionModel();
+        Permission permission = new Permission();
         permission.setName(request.getName());
         permission.setStatus(request.getStatus());
         permission.setCreatedAt(new Date());
@@ -90,7 +86,7 @@ public class PermissionRoute extends AllDirectives {
     }
 
     private Route updatePermission(long id){
-        PermissionModel permission = permissionDao.findById(id);
+        Permission permission = permissionDao.findById(id);
         if(permission==null){
             return complete(StatusCodes.NOT_FOUND,"permission not found");
         }
@@ -108,7 +104,7 @@ public class PermissionRoute extends AllDirectives {
     }
 
     private Route deletePermission(long id){
-        PermissionModel permission = permissionDao.findById(id);
+        Permission permission = permissionDao.findById(id);
         if(permission==null){
             return complete(StatusCodes.NOT_FOUND,"permission not found");
         }

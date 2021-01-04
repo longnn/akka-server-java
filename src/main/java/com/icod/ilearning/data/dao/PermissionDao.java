@@ -1,6 +1,6 @@
 package com.icod.ilearning.data.dao;
 
-import com.icod.ilearning.data.model.PermissionModel;
+import com.icod.ilearning.data.model.Permission;
 import com.icod.ilearning.util.HibernateUtil;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
@@ -13,12 +13,12 @@ import java.util.List;
 
 public class PermissionDao {
 
-    public List<PermissionModel> getByIds(Long[] ids){
+    public List<Permission> getByIds(Long[] ids){
         Session session = null;
-        List<PermissionModel> result = new ArrayList<>();
+        List<Permission> result = new ArrayList<>();
         try {
             session = HibernateUtil.getSessionFactory().openSession();
-            Query<PermissionModel> query = session.createQuery("from PermissionModel where id in :ids");
+            Query<Permission> query = session.createQuery("from Permission where id in :ids");
             query.setParameterList("ids",ids);
             result = query.getResultList();
         } catch (Exception e){
@@ -27,17 +27,17 @@ public class PermissionDao {
         return result;
     }
 
-    public List<PermissionModel> getAll(String name,Integer limit, Integer offset){
+    public List<Permission> getAll(String name, Integer limit, Integer offset){
         Session session = null;
-        List<PermissionModel> result = new ArrayList<>();
+        List<Permission> result = new ArrayList<>();
         try {
             session = HibernateUtil.getSessionFactory().openSession();
             CriteriaBuilder builder = session.getCriteriaBuilder();
-            CriteriaQuery<PermissionModel> criteria = builder.createQuery(PermissionModel.class);
-            Root<PermissionModel> permission = criteria.from(PermissionModel.class);
+            CriteriaQuery<Permission> criteria = builder.createQuery(Permission.class);
+            Root<Permission> permission = criteria.from(Permission.class);
             criteria.select(permission);
             if(name!=null) criteria.where(builder.like(permission.get("name"),"%"+name+"%"));
-            Query<PermissionModel> query = session.createQuery(criteria);
+            Query<Permission> query = session.createQuery(criteria);
             if (limit != null) query.setMaxResults(limit);
             if (offset != null) query.setFirstResult(offset);
             result = query.getResultList();
@@ -48,11 +48,11 @@ public class PermissionDao {
         }
         return result;
     }
-    public PermissionModel findById(long id){
+    public Permission findById(long id){
         Session session = null;
         try {
             session = HibernateUtil.getSessionFactory().openSession();
-            Query<PermissionModel> query = session.createQuery("from PermissionModel where id=:id");
+            Query<Permission> query = session.createQuery("from Permission where id=:id");
             query.setParameter("id",id);
             return query.getSingleResult();
         } catch (Exception e) {
@@ -62,7 +62,7 @@ public class PermissionDao {
             if(session!=null) session.close();
         }
     }
-    public Long insert(PermissionModel permission){
+    public Long insert(Permission permission){
         Session session = null;
         try {
             session = HibernateUtil.getSessionFactory().openSession();
@@ -77,7 +77,7 @@ public class PermissionDao {
             if(session!=null) session.close();
         }
     }
-    public boolean update(PermissionModel permission){
+    public boolean update(Permission permission){
         Session session = null;
         try {
             session = HibernateUtil.getSessionFactory().openSession();
@@ -92,7 +92,7 @@ public class PermissionDao {
             if(session!=null) session.close();
         }
     }
-    public boolean delete(PermissionModel permission){
+    public boolean delete(Permission permission){
         Session session = null;
         try {
             session = HibernateUtil.getSessionFactory().openSession();

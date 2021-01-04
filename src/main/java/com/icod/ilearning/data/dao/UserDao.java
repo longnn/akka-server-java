@@ -1,6 +1,6 @@
 package com.icod.ilearning.data.dao;
 
-import com.icod.ilearning.data.model.UserModel;
+import com.icod.ilearning.data.model.User;
 import com.icod.ilearning.util.HibernateUtil;
 import com.icod.ilearning.util.SecurityUtil;
 import org.hibernate.Session;
@@ -13,20 +13,20 @@ import javax.persistence.criteria.Root;
 import java.util.ArrayList;
 import java.util.List;
 
-public class UserDao extends CrudDao<UserModel>{
+public class UserDao extends CrudDao<User>{
 
     public UserDao() {
-        super(UserModel.class);
+        super(User.class);
     }
 
-    public List<UserModel> getAll(String name) {
+    public List<User> getAll(String name) {
         Session session = null;
-        List<UserModel> result = new ArrayList<>();
+        List<User> result = new ArrayList<>();
         try {
             session = HibernateUtil.getSessionFactory().openSession();
             CriteriaBuilder builder = session.getCriteriaBuilder();
-            CriteriaQuery<UserModel> criteria = builder.createQuery(UserModel.class);
-            Root<UserModel> user = criteria.from(UserModel.class);
+            CriteriaQuery<User> criteria = builder.createQuery(User.class);
+            Root<User> user = criteria.from(User.class);
             criteria.select(user);
             if (name != null) criteria.where(builder.like(user.get("name"), "%" + name + "%"));
             result = session.createQuery(criteria).getResultList();
@@ -40,11 +40,11 @@ public class UserDao extends CrudDao<UserModel>{
         return result;
     }
 
-    public UserModel findUserLogin(String email,String password) {
+    public User findUserLogin(String email, String password) {
         Session session = null;
         try {
             session = HibernateUtil.getSessionFactory().openSession();
-            Query<UserModel> query = session.createQuery("from UserModel where email=:email and password=:password");
+            Query<User> query = session.createQuery("from User where email=:email and password=:password");
             query.setParameter("email", email);
             query.setParameter("password", SecurityUtil.md5(password));
             return query.getSingleResult();
@@ -60,11 +60,11 @@ public class UserDao extends CrudDao<UserModel>{
         }
     }
 
-    public UserModel findById(long id) {
+    public User findById(long id) {
         Session session = null;
         try {
             session = HibernateUtil.getSessionFactory().openSession();
-            Query<UserModel> query = session.createQuery("from UserModel where id=:id and status = 1");
+            Query<User> query = session.createQuery("from User where id=:id and status = 1");
             query.setParameter("id", id);
             return query.getSingleResult();
         } catch (Exception e) {
@@ -79,7 +79,7 @@ public class UserDao extends CrudDao<UserModel>{
         Session session = null;
         try {
             session = HibernateUtil.getSessionFactory().openSession();
-            Query<Long> query = session.createQuery("select count(id) from UserModel where email=:email");
+            Query<Long> query = session.createQuery("select count(id) from User where email=:email");
             query.setParameter("email", email);
             Long count = query.getSingleResult();
             return count.equals(0L) ? false : true;

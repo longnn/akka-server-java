@@ -1,8 +1,7 @@
 package com.icod.ilearning.services.protocol.teacher.list;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.icod.ilearning.data.model.RoleModel;
-import com.icod.ilearning.data.model.TeacherModel;
+import com.icod.ilearning.data.model.Teacher;
 import lombok.Data;
 
 import java.util.List;
@@ -14,5 +13,5 @@ public class ResponseGetTeacherList {
     @JsonProperty("perPage")
     long perPage;
     @JsonProperty("teachers")
-    List<TeacherModel> teachers;
+    List<Teacher> teachers;
 }

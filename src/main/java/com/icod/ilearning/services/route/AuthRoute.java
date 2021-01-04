@@ -1,21 +1,17 @@
 package com.icod.ilearning.services.route;
 
-import akka.actor.ActorSystem;
 import akka.http.javadsl.marshallers.jackson.Jackson;
 import akka.http.javadsl.model.StatusCodes;
 import akka.http.javadsl.server.AllDirectives;
-import akka.http.javadsl.server.MalformedFormFieldRejection;
 import akka.http.javadsl.server.Rejections;
 import akka.http.javadsl.server.Route;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationConfig;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.icod.ilearning.Application;
 import com.icod.ilearning.data.dao.RefreshTokenDao;
 import com.icod.ilearning.data.dao.UserDao;
-import com.icod.ilearning.data.model.RefreshTokenModel;
-import com.icod.ilearning.data.model.UserModel;
-import com.icod.ilearning.data.object.JwtToken;
+import com.icod.ilearning.data.model.RefreshToken;
+import com.icod.ilearning.data.model.User;
 import com.icod.ilearning.services.protocol.auth.login.RequestLogin;
 import com.icod.ilearning.services.protocol.auth.login.ResponseLogin;
 import com.icod.ilearning.services.protocol.auth.refreshToken.RequestRefreshToken;
@@ -25,7 +21,6 @@ import com.icod.ilearning.util.SecurityUtil;
 import com.icod.ilearning.util.ValidationUtil;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
-import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -60,7 +55,7 @@ public class AuthRoute extends AllDirectives {
         if (!ValidationUtil.isValidPassword(request.getPassword())) {
             return reject(Rejections.malformedFormField("password", lang.trans("invalid_password")));
         }
-        UserModel user = userDao.findUserLogin(request.getEmail(), request.getPassword());
+        User user = userDao.findUserLogin(request.getEmail(), request.getPassword());
         if (user == null) {
             return complete(StatusCodes.UNAUTHORIZED, lang.trans("invalid_account"));
         }
@@ -94,9 +89,9 @@ public class AuthRoute extends AllDirectives {
         // REFRESH TOKEN
         RefreshTokenDao refreshTokenDao = new RefreshTokenDao();
         String refresh = SecurityUtil.generateRefreshToken(user.getId(), secretKey);
-        RefreshTokenModel refreshToken = new RefreshTokenDao().findByUserId(user.getId());
+        RefreshToken refreshToken = new RefreshTokenDao().findByUserId(user.getId());
         if (refreshToken == null) {
-            refreshToken = new RefreshTokenModel();
+            refreshToken = new RefreshToken();
             refreshToken.setUserId(user.getId());
             refreshToken.setCreatedAt(new Date());
             refreshToken.setExpiredAt(refreshExpDate);
@@ -129,7 +124,7 @@ public class AuthRoute extends AllDirectives {
         if (!ValidationUtil.isValidPassword(request.getPassword())) {
             return reject(Rejections.malformedFormField("password", lang.trans("invalid_password")));
         }
-        UserModel user = new UserModel();
+        User user = new User();
         user.setName(request.getName());
         user.setEmail(request.getEmail());
         user.setPassword(SecurityUtil.md5(request.getPassword()));
@@ -144,7 +139,7 @@ public class AuthRoute extends AllDirectives {
             return reject(Rejections.malformedFormField("refreshToken","refreshToken is required"));
         }
         RefreshTokenDao refreshTokenDao = new RefreshTokenDao();
-        RefreshTokenModel refreshToken = refreshTokenDao.find(request.getRefreshToken());
+        RefreshToken refreshToken = refreshTokenDao.find(request.getRefreshToken());
         if(refreshToken==null || refreshToken.getExpiredAt().compareTo(new Date()) < 0){
             return complete(StatusCodes.FORBIDDEN,"invalid refreshToken");
         }

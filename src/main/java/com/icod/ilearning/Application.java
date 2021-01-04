@@ -3,15 +3,11 @@ package com.icod.ilearning;
 import akka.actor.ActorSystem;
 import akka.actor.CoordinatedShutdown;
 import akka.http.javadsl.ServerBinding;
-import com.icod.ilearning.data.dao.UserDao;
-import com.icod.ilearning.data.model.UserModel;
 import com.icod.ilearning.services.RestInterface;
-import com.icod.ilearning.util.SecurityUtil;
 import com.icod.ilearning.util.Snowflake;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 
-import java.util.List;
 import java.util.concurrent.CompletionStage;
 
 public class Application {

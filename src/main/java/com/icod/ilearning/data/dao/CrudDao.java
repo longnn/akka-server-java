@@ -79,4 +79,23 @@ public class CrudDao<T> {
             if (session != null) session.close();
         }
     }
+
+    public boolean changeStatus(List<Long> ids, int status) {
+        Session session = null;
+        try {
+            session = HibernateUtil.getSessionFactory().openSession();
+            session.beginTransaction();
+            Query query = session.createQuery("update " +clazz.getSimpleName()+ " set status = :status where id in (:ids)");
+            query.setParameter("ids", ids);
+            query.setParameter("status", status);
+            query.executeUpdate();
+            session.getTransaction().commit();
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        } finally {
+            if (session != null) session.close();
+        }
+    }
 }

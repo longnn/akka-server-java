@@ -7,9 +7,8 @@ import akka.http.javadsl.server.PathMatchers;
 import akka.http.javadsl.server.Rejections;
 import akka.http.javadsl.server.Route;
 import com.icod.ilearning.data.dao.RoleDao;
-import com.icod.ilearning.data.model.RoleModel;
+import com.icod.ilearning.data.model.Role;
 import com.icod.ilearning.services.protocol.role.create.RequestCreateRole;
-import com.icod.ilearning.services.protocol.role.list.RequestGetRoleList;
 import com.icod.ilearning.services.protocol.role.list.ResponseGetRoleList;
 import com.icod.ilearning.services.protocol.role.update.RequestUpdateRole;
 import com.icod.ilearning.util.ValidationUtil;
@@ -56,7 +55,7 @@ public class RoleRoute extends AllDirectives {
             if (request.containsKey("offset") && NumberUtils.isParsable(request.get("offset"))) {
                 offset = Integer.parseInt(request.get("offset"));
             }
-            List<RoleModel> roles = roleDao.getAll(name, limit, offset);
+            List<Role> roles = roleDao.getAll(name, limit, offset);
             ResponseGetRoleList response = new ResponseGetRoleList();
             response.setTotal(roles.size());
             response.setRoles(roles);
@@ -66,7 +65,7 @@ public class RoleRoute extends AllDirectives {
     }
 
     private Route getRole(long id) {
-        RoleModel role = roleDao.findById(id);
+        Role role = roleDao.findById(id);
         if (role == null) {
             return complete(StatusCodes.NOT_FOUND, "role not found");
         }
@@ -77,7 +76,7 @@ public class RoleRoute extends AllDirectives {
         if (ValidationUtil.isNullOrEmpty(request.getName())) {
             return reject(Rejections.malformedFormField("title", "title required"));
         }
-        RoleModel role = new RoleModel();
+        Role role = new Role();
         role.setName(request.getName());
         role.setStatus(request.getStatus());
         role.setCreatedAt(new Date());
@@ -91,7 +90,7 @@ public class RoleRoute extends AllDirectives {
     }
 
     private Route updateRole(long id) {
-        RoleModel role = roleDao.findById(id);
+        Role role = roleDao.findById(id);
         if (role == null) {
             return complete(StatusCodes.NOT_FOUND, "role not found");
         }
@@ -109,7 +108,7 @@ public class RoleRoute extends AllDirectives {
     }
 
     private Route deleteRole(long id) {
-        RoleModel role = roleDao.findById(id);
+        Role role = roleDao.findById(id);
         if (role == null) {
             return complete(StatusCodes.NOT_FOUND, "role not found");
         }
