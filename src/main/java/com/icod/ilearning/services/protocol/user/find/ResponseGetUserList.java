@@ -11,5 +11,5 @@ public class ResponseGetUserList {
     @JsonProperty("total")
     long total;
     @JsonProperty("items")
-    List<User> users;
+    List<User> items;
 }

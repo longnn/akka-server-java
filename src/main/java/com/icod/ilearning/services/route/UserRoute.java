@@ -31,6 +31,7 @@ import java.util.concurrent.CompletableFuture;
 public class UserRoute extends AllDirectives {
 
     final UserDao userDao = new UserDao();
+    final RoleDao roleDao = new RoleDao();
     final Config config = ConfigFactory.load();
     final ObjectMapper objectMapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
@@ -78,7 +79,7 @@ public class UserRoute extends AllDirectives {
                 List<User> users = userDao.getAll(null);
                 ResponseGetUserList response = new ResponseGetUserList();
                 response.setTotal(users.size());
-                response.setUsers(users);
+                response.setItems(users);
                 return response;
             });
             return completeOKWithFuture(future, Jackson.marshaller());
@@ -109,6 +110,9 @@ public class UserRoute extends AllDirectives {
 
     private Route getUser(long id) {
         User user = userDao.findById(id);
+        if(id==1){
+            return complete(StatusCodes.BAD_REQUEST, "user not found");
+        }
         if (user == null) {
             return complete(StatusCodes.NOT_FOUND, "user not found");
         }
@@ -116,7 +120,7 @@ public class UserRoute extends AllDirectives {
     }
 
     private Route createUser() {
-        return entity(Jackson.unmarshaller(RequestCreateUser.class), request -> {
+        return entity(Jackson.unmarshaller(objectMapper,RequestCreateUser.class), request -> {
             ResponseCreateUser response;
             // VALIDATE
             if (ValidationUtil.isNullOrEmpty(request.getName())) {
@@ -131,11 +135,8 @@ public class UserRoute extends AllDirectives {
             if (!ValidationUtil.isValidPassword(request.getPassword())) {
                 return reject(Rejections.malformedFormField("password", "password required and must contain at lease 8 characters"));
             }
-            if (!ValidationUtil.isNumber(request.getRoleId())) {
-                return reject(Rejections.malformedFormField("role", "role required"));
-            }
             RoleDao roleDao = new RoleDao();
-            Role role = roleDao.findById(Integer.parseInt(request.getRoleId()));
+            Role role = roleDao.findById(request.getRoleId());
 
             User user = new User();
             user.setName(request.getName());
@@ -143,7 +144,7 @@ public class UserRoute extends AllDirectives {
             user.setPassword(SecurityUtil.md5(request.getPassword()));
             user.setCreatedAt(new Date());
             user.setUpdatedAt(new Date());
-            user.setStatus(Integer.parseInt(request.getStatus()));
+            user.setStatus(request.getStatus());
             user.setRole(role);
             Long id = userDao.create(user);
             if (id == null) {
@@ -159,13 +160,14 @@ public class UserRoute extends AllDirectives {
         if (user == null) {
             return complete(StatusCodes.NOT_FOUND, "user not found");
         }
-        return entity(Jackson.unmarshaller(RequestUpdateUser.class), request -> {
+        return entity(Jackson.unmarshaller(objectMapper, RequestUpdateUser.class), request -> {
             if (!ValidationUtil.isNullOrEmpty(request.getFullname())) {
                 user.setName(request.getFullname());
             }
             if (ValidationUtil.isValidPassword(request.getPassword())) {
                 user.setPassword(SecurityUtil.md5(request.getPassword()));
             }
+            Role role = roleDao.findById(request.getRole());
             if (!userDao.update(user)) {
                 return complete(StatusCodes.INTERNAL_SERVER_ERROR, "fail to update user");
             } else {

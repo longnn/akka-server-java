@@ -12,7 +12,7 @@ public class RequestCreateUser {
     @JsonProperty("password")
     String password;
     @JsonProperty("status")
-    String status;
+    int status;
     @JsonProperty("role")
-    String roleId;
+    int roleId;
 }

@@ -64,7 +64,7 @@ public class UserDao extends CrudDao<User>{
         Session session = null;
         try {
             session = HibernateUtil.getSessionFactory().openSession();
-            Query<User> query = session.createQuery("from User where id=:id and status = 1");
+            Query<User> query = session.createQuery("from User where id=:id");
             query.setParameter("id", id);
             return query.getSingleResult();
         } catch (Exception e) {
